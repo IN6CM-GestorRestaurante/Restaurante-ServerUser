@@ -1,8 +1,8 @@
 'use strict';
 
 import Order from './order.model.js';
-import Menu from '../src/menus/menu.model.js';
-import { User } from '../src/users/user.model.js';
+import Menu from '../menus/menu.model.js';
+import { User } from '../users/user.model.js';
 
 /**
  * Crear un nuevo pedido de restaurante.

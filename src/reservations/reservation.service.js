@@ -1,7 +1,7 @@
 'use strict';
 
 import Reservation from './reservation.model.js';
-import Menu from '../src/menus/menu.model.js';
+import Menu from '../menus/menu.model.js';
 
 /**
  * Registrar una nueva reservación.
