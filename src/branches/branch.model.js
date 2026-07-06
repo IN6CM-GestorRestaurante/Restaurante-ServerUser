@@ -30,17 +30,7 @@ const restaurantSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'La categoría gastronómica es obligatoria'],
-    enum: [
-      'Italiana',
-      'Mexicana',
-      'Japonesa',
-      'Casera',
-      'Comida Rápida',
-      'Vegetariana',
-      'Mariscos',
-      'China',
-      'Otros',
-    ],
+    trim: true,
   },
   averagePrice: {
     type: Number,
