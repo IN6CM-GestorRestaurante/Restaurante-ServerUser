@@ -7,7 +7,7 @@ import Menu from './menu.model.js';
  */
 export const fetchMenus = async ({
   page = 1,
-  limit = 10,
+  limit = 50,
   branchId,
   category,
 }) => {
@@ -15,11 +15,11 @@ export const fetchMenus = async ({
   if (branchId) filter.restaurant = branchId;
   if (category) filter.category = category;
 
-  const pageNumber = parseInt(page);
-  const limitNumber = parseInt(limit);
+  const pageNumber = parseInt(page) || 1;
+  const limitNumber = parseInt(limit) || 50;
 
   const menus = await Menu.find(filter)
-    .populate('restaurant', 'name address')
+    .populate('restaurant', 'name address category openingTime closingTime companyId state isActive email phoneNumber')
     .limit(limitNumber)
     .skip((pageNumber - 1) * limitNumber)
     .sort({ createdAt: -1 });

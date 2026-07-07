@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 const menuSchema = new mongoose.Schema({
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Restaurant',
+    ref: 'Branch',
     required: [true, 'El menú debe estar vinculado a un restaurante'],
   },
   name: {

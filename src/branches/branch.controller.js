@@ -7,12 +7,14 @@ import { fetchBranches, fetchBranchById } from './branch.service.js';
  */
 export const getBranches = async (req, res) => {
   try {
-    const { page = 1, limit = 10, isActive = true } = req.query;
+    const { page = 1, limit = 50, isActive = true, companyId, state } = req.query;
 
     const { branches, pagination } = await fetchBranches({
       page,
       limit,
       isActive,
+      companyId,
+      state,
     });
 
     return res.status(200).json({
