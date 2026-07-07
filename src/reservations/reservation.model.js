@@ -8,10 +8,22 @@ const reservationSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'El usuario que realiza la reserva es obligatorio'],
   },
-  restaurant: {
+  branch: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Branch',
     required: [true, 'El restaurante es obligatorio'],
+  },
+  // Nombre a mostrar en el panel de staff (ServerAdmin lo requiere siempre para
+  // reservas de walk-in). Para reservas de cliente se autocompleta desde su perfil.
+  guestName: {
+    type: String,
+    trim: true,
+  },
+  guestsCount: {
+    type: Number,
+    required: [true, 'La cantidad de personas es obligatoria'],
+    min: [1, 'Debe ser al menos 1 persona'],
+    default: 1,
   },
   type: {
     type: String,
@@ -19,11 +31,13 @@ const reservationSchema = new mongoose.Schema({
     enum: ['En Mesa', 'Para llevar', 'A domicilio'],
     default: 'En Mesa',
   },
-  table: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Table',
-    required: function () {
-      return this.type === 'En Mesa';
+  tables: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Table' }],
+    validate: {
+      validator: function (value) {
+        return this.type !== 'En Mesa' || (Array.isArray(value) && value.length > 0);
+      },
+      message: 'La mesa es obligatoria para reservaciones en el local',
     },
   },
   items: [
@@ -75,10 +89,10 @@ const reservationSchema = new mongoose.Schema({
 
 // Índice para búsquedas rápidas
 reservationSchema.index({ user: 1 });
-reservationSchema.index({ restaurant: 1 });
+reservationSchema.index({ branch: 1 });
 reservationSchema.index({ date: 1 });
 reservationSchema.index({ status: 1 });
-reservationSchema.index({ table: 1, date: 1 });
+reservationSchema.index({ tables: 1, date: 1 });
 
 /**
  * Buscar reservaciones conflictivas para la misma mesa en el local.
@@ -96,7 +110,7 @@ reservationSchema.statics.findConflictingReservations = function (
   const endTime = new Date(reservationTime.getTime() + twoHours);
 
   const query = {
-    table: tableId,
+    tables: tableId,
     type: 'En Mesa',
     status: { $in: ['Pendiente', 'Confirmada', 'En curso'] },
     date: {
