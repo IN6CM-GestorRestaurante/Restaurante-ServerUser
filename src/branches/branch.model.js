@@ -2,16 +2,22 @@
 
 import mongoose from 'mongoose';
 
-const restaurantSchema = new mongoose.Schema({
+const branchSchema = new mongoose.Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+  },
   name: {
     type: String,
-    required: [true, 'El nombre del restaurante es obligatorio'],
+    required: [true, 'El nombre de la sucursal es obligatorio'],
     trim: true,
-    unique: true,
+  },
+  description: {
+    type: String,
+    trim: true,
   },
   descripcion: {
     type: String,
-    required: [true, 'La descripción es obligatoria'],
     trim: true,
   },
   address: {
@@ -21,20 +27,16 @@ const restaurantSchema = new mongoose.Schema({
   },
   openingTime: {
     type: String,
-    required: [true, 'La hora de apertura es obligatoria'],
   },
   closingTime: {
     type: String,
-    required: [true, 'La hora de cierre es obligatoria'],
   },
   category: {
     type: String,
-    required: [true, 'La categoría gastronómica es obligatoria'],
     trim: true,
   },
   averagePrice: {
     type: Number,
-    required: [true, 'El precio promedio es obligatorio'],
     min: 0,
   },
   photos: {
@@ -43,15 +45,16 @@ const restaurantSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: [true, 'El correo de contacto es obligatorio'],
-    unique: true,
     trim: true,
   },
   phoneNumber: {
     type: String,
-    required: [true, 'El número de teléfono es obligatorio'],
-    unique: true,
     trim: true,
+  },
+  state: {
+    type: String,
+    enum: ['Operativa', 'En mantenimiento', 'Cerrada'],
+    default: 'Operativa',
   },
   isActive: {
     type: Boolean,
@@ -63,8 +66,9 @@ const restaurantSchema = new mongoose.Schema({
   },
 });
 
-// Registrar el modelo como 'Restaurant' apuntando a la colección 'restaurants'
-const Restaurant =
-  mongoose.models.Restaurant ||
-  mongoose.model('Restaurant', restaurantSchema, 'restaurants');
-export default Restaurant;
+// Registrar el modelo como 'Branch' apuntando a la colección 'branches' (creada por ServerAdmin)
+const Branch =
+  mongoose.models.Branch ||
+  mongoose.model('Branch', branchSchema, 'branches');
+
+export default Branch;
