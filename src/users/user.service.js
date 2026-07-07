@@ -1,6 +1,45 @@
 'use strict';
 
-import { UserProfile } from './user.model.js';
+import { User, UserProfile } from './user.model.js';
+
+const VALID_ROLES = ['ADMIN', 'CLIENT', 'WAITER'];
+
+/**
+ * Crea o actualiza el registro local (Mongo) de un usuario a partir de los
+ * datos de identidad que vienen de auth-node (registro directo o perfil
+ * consultado por id). Es el único punto donde se arma este documento, tanto
+ * para el sync en el momento del registro como para la auto-provisión
+ * perezosa desde el middleware de autenticación.
+ */
+export const upsertUserFromAuthProfile = async ({
+  email,
+  name,
+  surname,
+  username,
+  phone,
+  role,
+}) => {
+  if (!email) {
+    throw new Error('email es obligatorio para sincronizar el usuario');
+  }
+
+  const safeRole = VALID_ROLES.includes(role) ? role : 'CLIENT';
+
+  return await User.findOneAndUpdate(
+    { email },
+    {
+      $set: {
+        name: name || username || 'Usuario',
+        surname: surname || '',
+        username: username || email.split('@')[0],
+        phone: phone || '',
+        role: safeRole,
+      },
+      $setOnInsert: { email, status: true },
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
+};
 
 /**
  * Obtener perfil por authId. Si no existe, lo crea automáticamente.

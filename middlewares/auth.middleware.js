@@ -2,6 +2,27 @@
 
 import jwt from 'jsonwebtoken';
 import { User } from '../src/users/user.model.js';
+import { getUserById } from '../src/auth/auth.service.js';
+import { upsertUserFromAuthProfile } from '../src/users/user.service.js';
+
+// Red de seguridad: normalmente el usuario ya deberia existir en esta base
+// gracias al sync que hace auth-node en el momento del registro
+// (POST /users/sync). Si por lo que sea no llego a existir (el sync fallo,
+// o el usuario se registro antes de que ese endpoint existiera), se
+// auto-provisiona aqui consultando el perfil canonico en auth-node.
+const provisionUserFromAuthNode = async (postgresUserId, fallbackEmail) => {
+  const profile = await getUserById(postgresUserId);
+  if (!profile) return null;
+
+  return await upsertUserFromAuthProfile({
+    email: profile.email || fallbackEmail,
+    name: profile.name,
+    surname: profile.surname,
+    username: profile.username,
+    phone: profile.phone,
+    role: profile.role,
+  });
+};
 
 export const authMiddleware = async (req, res, next) => {
   try {
@@ -45,7 +66,11 @@ export const authMiddleware = async (req, res, next) => {
     }
 
     // Buscar el perfil de usuario en MongoDB usando el correo
-    const mongoUser = await User.findOne({ email: userEmail });
+    let mongoUser = await User.findOne({ email: userEmail });
+
+    if (!mongoUser) {
+      mongoUser = await provisionUserFromAuthNode(decoded.sub, userEmail);
+    }
 
     if (!mongoUser || !mongoUser.status) {
       return res.status(401).json({

@@ -23,6 +23,7 @@ import menuRoutes from '../src/menus/menu.routes.js';
 import tableRoutes from '../src/tables/table.routes.js';
 import reviewRoutes from '../src/reviews/review.routes.js';
 import userRoutes from '../src/users/user.routes.js';
+import userSyncRoutes from '../src/users/user-sync.routes.js';
 import reservationRoutes from '../src/reservations/reservation.routes.js';
 import orderRoutes from '../src/orders/order.routes.js';
 
@@ -49,6 +50,11 @@ const mountRoutes = (app, basePath) => {
       service: 'Restaurante User Server',
     });
   });
+
+  // Sync interno servicio-a-servicio (secreto compartido, no JWT de usuario).
+  // Se monta antes de la ruta autenticada de /users para que /users/sync no
+  // pase por authMiddleware.
+  app.use(`${basePath}/users`, userSyncRoutes);
 
   // Rutas protegidas (Requieren token)
   app.use(`${basePath}/users`, authMiddleware, userRoutes);

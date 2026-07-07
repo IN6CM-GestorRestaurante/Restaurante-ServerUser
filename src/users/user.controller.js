@@ -7,9 +7,50 @@ import {
   addAddress,
   removeAddress,
   setDefaultAddress,
+  upsertUserFromAuthProfile,
 } from './user.service.js';
 import { enrichUserProfile } from '../../helpers/profile-enrichment.js';
 import { uploadProfilePictureToAuth } from '../auth/auth-profile.service.js';
+
+/**
+ * Sincroniza (crea o actualiza) el registro local de un usuario recien
+ * registrado en auth-node. Llamado servicio-a-servicio, protegido por
+ * requireInternalSecret (no lleva JWT de usuario).
+ */
+export const syncUser = async (req, res) => {
+  try {
+    const { email, name, surname, username, phone, role } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        message: 'El email es obligatorio para sincronizar el usuario',
+      });
+    }
+
+    const user = await upsertUserFromAuthProfile({
+      email,
+      name,
+      surname,
+      username,
+      phone,
+      role,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Usuario sincronizado exitosamente',
+      user,
+    });
+  } catch (error) {
+    console.error('Error en syncUser controller:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error al sincronizar el usuario',
+      error: error.message,
+    });
+  }
+};
 
 /**
  * Obtener perfil del usuario autenticado.
