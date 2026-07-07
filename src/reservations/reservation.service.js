@@ -3,6 +3,7 @@
 import Reservation from './reservation.model.js';
 import Menu from '../menus/menu.model.js';
 import { User } from '../users/user.model.js';
+import { computeEffectivePrice } from '../../helpers/pricing.js';
 
 // El request/response mantiene los nombres `restaurant`/`table` (singular) por
 // compatibilidad con los clientes ya construidos; internamente se guarda como
@@ -29,7 +30,7 @@ export const registerReservation = async (reservationData, userId) => {
     for (const item of reservationData.items) {
       const menuItem = await Menu.findById(item.menuItem);
       if (menuItem) {
-        totalPrice += (menuItem.price || 0) * (item.quantity || 1);
+        totalPrice += computeEffectivePrice(menuItem) * (item.quantity || 1);
       }
     }
   }

@@ -3,6 +3,7 @@
 import Order from './order.model.js';
 import Menu from '../menus/menu.model.js';
 import { User } from '../users/user.model.js';
+import { computeEffectivePrice } from '../../helpers/pricing.js';
 
 // El request/response de este servicio mantiene los nombres `restaurant`/`table`
 // (singular) por compatibilidad con los clientes ya construidos, aunque
@@ -33,7 +34,7 @@ export const createOrder = async (orderData, userId) => {
       throw new Error(`Plato de menú no disponible: ${item.menuItem}`);
     }
 
-    const priceAtTime = menuItem.price;
+    const priceAtTime = computeEffectivePrice(menuItem);
     const quantity = parseInt(item.quantity, 10) || 1;
     computedTotal += priceAtTime * quantity;
 
