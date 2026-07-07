@@ -43,6 +43,14 @@ const menuSchema = new mongoose.Schema({
     type: String,
     default: 'menus/default_menu',
   },
+  // Espejo del campo de promociones que administra ServerAdmin sobre el mismo platillo.
+  promotion: {
+    isActive: { type: Boolean, default: false },
+    discountType: { type: String, enum: ['PERCENTAGE', 'FIXED_PRICE', 'FIXED', 'PORCENTAJE', 'FIJO'] },
+    discountValue: { type: Number, min: 0 },
+    startsAt: { type: Date },
+    endsAt: { type: Date },
+  },
   isActive: {
     type: Boolean,
     default: true,

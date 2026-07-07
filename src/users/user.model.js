@@ -57,7 +57,7 @@ const userProfileSchema = new mongoose.Schema(
     },
     defaultBranch: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Restaurant',
+      ref: 'Branch',
       default: null,
     },
     addresses: [

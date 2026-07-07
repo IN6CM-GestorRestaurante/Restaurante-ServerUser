@@ -20,6 +20,8 @@ import swaggerSpec from './swagger.js';
 
 import branchRoutes from '../src/branches/branch.routes.js';
 import menuRoutes from '../src/menus/menu.routes.js';
+import tableRoutes from '../src/tables/table.routes.js';
+import reviewRoutes from '../src/reviews/review.routes.js';
 import userRoutes from '../src/users/user.routes.js';
 import reservationRoutes from '../src/reservations/reservation.routes.js';
 import orderRoutes from '../src/orders/order.routes.js';
@@ -34,9 +36,11 @@ const middlewares = (app) => {
 };
 
 const mountRoutes = (app, basePath) => {
-  // Rutas públicas
+  // Rutas públicas (reviews maneja su propio auth mixto internamente)
   app.use(`${basePath}/branches`, branchRoutes);
   app.use(`${basePath}/menus`, menuRoutes);
+  app.use(`${basePath}/tables`, tableRoutes);
+  app.use(`${basePath}/reviews`, reviewRoutes);
 
   app.get(`${basePath}/health`, (req, res) => {
     res.status(200).json({
