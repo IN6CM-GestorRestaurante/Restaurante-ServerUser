@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "PORT": "3003",
+    "URI_MONGODB": "mongodb+srv://sderosa2023220_db_user:RDYv0wCD4SngGkh9@cluster0.sbsikvd.mongodb.net/restaurante_db?retryWrites=true&w=majority&appName=Cluster0",
+    "SECRETORPRIVATEKEY": "Restaurante_Super_Secret_Key_2026_DotNet8",
+    "AUTH_NODE_URL": "https://gestor-restaurante-auth.vercel.app/api/v1/auth",
+    "ADMIN_SERVICE_URL": "https://gestor-restaurante-server.vercel.app",
+    "CLOUDINARY_CLOUD_NAME": "dueikakf8",
+    "CLOUDINARY_API_KEY": "119292848621234",
+    "CLOUDINARY_API_SECRET": "ckVTJkNQUjUatlwOcYFMg-9hAyM"
+  },
+  "installCommand": "npm install"
+}
