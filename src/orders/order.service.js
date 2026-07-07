@@ -4,6 +4,21 @@ import Order from './order.model.js';
 import Menu from '../menus/menu.model.js';
 import { User } from '../users/user.model.js';
 
+// El request/response de este servicio mantiene los nombres `restaurant`/`table`
+// (singular) por compatibilidad con los clientes ya construidos, aunque
+// internamente el documento se guarda como `branch`/`tables` para calzar con
+// el esquema de ServerAdmin (misma colección Mongo 'orders').
+const toClientShape = (order) => {
+  if (!order) return order;
+  const obj = order.toObject ? order.toObject() : order;
+  const { branch, tables, ...rest } = obj;
+  return {
+    ...rest,
+    restaurant: branch,
+    table: Array.isArray(tables) ? tables[0] : tables,
+  };
+};
+
 /**
  * Crear un nuevo pedido de restaurante.
  */
@@ -18,17 +33,17 @@ export const createOrder = async (orderData, userId) => {
       throw new Error(`Plato de menú no disponible: ${item.menuItem}`);
     }
 
-    const price = menuItem.price;
+    const priceAtTime = menuItem.price;
     const quantity = parseInt(item.quantity, 10) || 1;
-    computedTotal += price * quantity;
+    computedTotal += priceAtTime * quantity;
 
     itemsToCreate.push({
       menuItem: item.menuItem,
       quantity,
       modifiers: item.modifiers || [],
-      status: 'EN_ESPERA',
+      status: 'pending',
       notes: item.notes || '',
-      price,
+      priceAtTime,
     });
   }
 
@@ -44,17 +59,17 @@ export const createOrder = async (orderData, userId) => {
   }
 
   const order = new Order({
-    table: orderData.table,
-    restaurant: orderData.restaurant,
+    tables: [orderData.table],
+    branch: orderData.restaurant,
     waiter: defaultWaiter._id,
     user: userId, // Enlaza el pedido con el cliente móvil
     items: itemsToCreate,
-    status: 'ABIERTA',
+    status: 'pending',
     total: computedTotal,
   });
 
   await order.save();
-  return order;
+  return toClientShape(order);
 };
 
 /**
@@ -71,8 +86,8 @@ export const fetchUserOrders = async (
   const limitNumber = parseInt(limit, 10);
 
   const orders = await Order.find(filter)
-    .populate('restaurant', 'name address')
-    .populate('table', 'number')
+    .populate('branch', 'name address')
+    .populate('tables', 'number')
     .populate('items.menuItem', 'name price image')
     .limit(limitNumber)
     .skip((pageNumber - 1) * limitNumber)
@@ -81,7 +96,7 @@ export const fetchUserOrders = async (
   const total = await Order.countDocuments(filter);
 
   return {
-    orders,
+    orders: orders.map(toClientShape),
     pagination: {
       currentPage: pageNumber,
       totalPages: Math.ceil(total / limitNumber),
@@ -95,10 +110,12 @@ export const fetchUserOrders = async (
  * Obtener detalle de un pedido por ID.
  */
 export const fetchOrderById = async (orderId, userId) => {
-  return await Order.findOne({ _id: orderId, user: userId })
-    .populate('restaurant', 'name address')
-    .populate('table', 'number')
+  const order = await Order.findOne({ _id: orderId, user: userId })
+    .populate('branch', 'name address')
+    .populate('tables', 'number')
     .populate('items.menuItem', 'name price image');
+
+  return toClientShape(order);
 };
 
 /**
@@ -109,15 +126,15 @@ export const cancelOrder = async (orderId, userId) => {
 
   if (!order) return null;
 
-  if (order.status !== 'ABIERTA') {
+  if (order.status !== 'pending') {
     throw new Error(
       `No se puede cancelar un pedido con estado ${order.status}`
     );
   }
 
-  // Verificar si alguno de los platillos ya está en cocina o listo
+  // Verificar si alguno de los platillos ya está en preparación o entregado
   const cannotCancel = order.items.some((item) =>
-    ['EN_COCINA', 'LISTO', 'SERVIDO'].includes(item.status)
+    ['in-kitchen', 'ready', 'delivered'].includes(item.status)
   );
 
   if (cannotCancel) {
@@ -126,8 +143,8 @@ export const cancelOrder = async (orderId, userId) => {
     );
   }
 
-  order.status = 'CANCELADA';
+  order.status = 'cancelled';
   await order.save();
 
-  return order;
+  return toClientShape(order);
 };

@@ -2,19 +2,25 @@
 
 import mongoose from 'mongoose';
 
+// Nombres de campo y enums alineados 1:1 con ServerAdmin/src/orders/order.model.js,
+// ya que ambos servicios leen/escriben la misma colección 'orders' compartida.
+const ORDER_STATUS = ['pending', 'in-kitchen', 'ready', 'delivered', 'paid', 'cancelled'];
+
 const orderSchema = new mongoose.Schema(
   {
-    table: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Table',
-      required: [true, 'La mesa es obligatoria'],
-    },
+    tables: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Table',
+        required: [true, 'Al menos una mesa es obligatoria'],
+      },
+    ],
     waiter: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'El mesero es obligatorio'],
     },
-    restaurant: {
+    branch: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Branch',
       required: [true, 'El restaurante es obligatorio'],
@@ -42,14 +48,14 @@ const orderSchema = new mongoose.Schema(
         },
         status: {
           type: String,
-          enum: ['EN_ESPERA', 'EN_COCINA', 'LISTO', 'SERVIDO'],
-          default: 'EN_ESPERA',
+          enum: ORDER_STATUS,
+          default: 'pending',
         },
         notes: {
           type: String,
           default: '',
         },
-        price: {
+        priceAtTime: {
           type: Number,
           required: true,
         },
@@ -57,8 +63,8 @@ const orderSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ['ABIERTA', 'CERRADA', 'CANCELADA'],
-      default: 'ABIERTA',
+      enum: ORDER_STATUS,
+      default: 'pending',
     },
     total: {
       type: Number,
@@ -75,7 +81,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre('save', function (next) {
   if (this.items && this.items.length > 0) {
     this.total = this.items.reduce(
-      (acc, item) => acc + (item.price || 0) * (item.quantity || 1),
+      (acc, item) => acc + (item.priceAtTime || 0) * (item.quantity || 1),
       0
     );
   } else {
