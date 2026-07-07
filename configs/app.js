@@ -26,6 +26,7 @@ import userRoutes from '../src/users/user.routes.js';
 import userSyncRoutes from '../src/users/user-sync.routes.js';
 import reservationRoutes from '../src/reservations/reservation.routes.js';
 import orderRoutes from '../src/orders/order.routes.js';
+import billRoutes from '../src/bills/bill.routes.js';
 
 const middlewares = (app) => {
   app.use(express.urlencoded({ extended: false, limit: '10mb' }));
@@ -65,6 +66,7 @@ const mountRoutes = (app, basePath) => {
     reservationRoutes
   );
   app.use(`${basePath}/orders`, authMiddleware, generalUserLimit, orderRoutes);
+  app.use(`${basePath}/bills`, authMiddleware, generalUserLimit, billRoutes);
 };
 
 const routes = (app) => {
