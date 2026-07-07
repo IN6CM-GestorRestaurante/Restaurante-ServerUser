@@ -3,10 +3,13 @@
 import mongoose from 'mongoose';
 
 const menuSchema = new mongoose.Schema({
+  branch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Branch',
+  },
   restaurant: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Branch',
-    required: [true, 'El menú debe estar vinculado a un restaurante'],
   },
   name: {
     type: String,

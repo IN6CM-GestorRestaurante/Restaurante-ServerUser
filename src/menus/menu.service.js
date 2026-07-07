@@ -12,13 +12,16 @@ export const fetchMenus = async ({
   category,
 }) => {
   const filter = { isActive: true };
-  if (branchId) filter.restaurant = branchId;
+  if (branchId) {
+    filter.$or = [{ branch: branchId }, { restaurant: branchId }];
+  }
   if (category) filter.category = category;
 
   const pageNumber = parseInt(page) || 1;
   const limitNumber = parseInt(limit) || 50;
 
   const menus = await Menu.find(filter)
+    .populate('branch', 'name address category openingTime closingTime companyId state isActive email phoneNumber')
     .populate('restaurant', 'name address category openingTime closingTime companyId state isActive email phoneNumber')
     .limit(limitNumber)
     .skip((pageNumber - 1) * limitNumber)
@@ -41,10 +44,9 @@ export const fetchMenus = async ({
  * Obtener un plato de menú por ID.
  */
 export const fetchMenuById = async (id) => {
-  return await Menu.findById(id).populate(
-    'restaurant',
-    'name address openingTime closingTime'
-  );
+  return await Menu.findById(id)
+    .populate('branch', 'name address openingTime closingTime')
+    .populate('restaurant', 'name address openingTime closingTime');
 };
 
 /**
