@@ -2,6 +2,19 @@
 
 import mongoose from 'mongoose';
 import Review from './review.model.js';
+import '../branches/branch.model.js'; // Ensure Branch model is registered
+
+const updateBranchRating = async (branchId) => {
+  const stats = await Review.aggregate([
+    { $match: { restaurant: new mongoose.Types.ObjectId(branchId) } },
+    { $group: { _id: '$restaurant', average: { $avg: '$rating' }, count: { $sum: 1 } } }
+  ]);
+  
+  const avg = stats.length > 0 ? Math.round(stats[0].average * 10) / 10 : 0;
+  const count = stats.length > 0 ? stats[0].count : 0;
+  
+  await mongoose.model('Branch').findByIdAndUpdate(branchId, { rating: avg, reviewCount: count });
+};
 
 export const createReview = async ({ userId, restaurant, menuItem = null, rating, comment }) => {
   const exists = await Review.findOne({ user: userId, restaurant, menuItem });
@@ -11,7 +24,9 @@ export const createReview = async ({ userId, restaurant, menuItem = null, rating
     throw err;
   }
 
-  return await Review.create({ user: userId, restaurant, menuItem, rating, comment });
+  const review = await Review.create({ user: userId, restaurant, menuItem, rating, comment });
+  await updateBranchRating(restaurant);
+  return review;
 };
 
 export const fetchReviewsByRestaurant = async (restaurantId, { page = 1, limit = 20 } = {}) => {
@@ -67,6 +82,7 @@ export const updateOwnReview = async (id, userId, { rating, comment }) => {
   review.updatedAt = new Date();
 
   await review.save();
+  await updateBranchRating(review.restaurant);
   return review;
 };
 
@@ -77,5 +93,6 @@ export const deleteOwnReview = async (id, userId) => {
     err.statusCode = 404;
     throw err;
   }
+  await updateBranchRating(review.restaurant);
   return review;
 };
