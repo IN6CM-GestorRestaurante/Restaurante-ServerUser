@@ -1,153 +1,82 @@
-# Restaurante Server User - API Pública de Usuarios
+# Restaurante - Server User API
 
-API RESTful para usuarios finales del ecosistema **Gestor de Restaurante**. Consumida principalmente por la aplicación móvil del cliente.
+Este repositorio contiene la **API REST** encargada de la gestión de usuarios regulares (clientes) dentro del ecosistema del sistema de Restaurante. Construido con Node.js, Express y MongoDB, proporciona un backend robusto, seguro y escalable.
 
-## Descripción
+## 🚀 Características Principales
+- **Autenticación y Autorización:** Generación y validación de tokens JWT.
+- **Gestión de Perfiles:** CRUD completo para usuarios clientes.
+- **Manejo de Imágenes:** Integración con Cloudinary y Multer para almacenamiento seguro de imágenes de perfil.
+- **Seguridad:** Implementación de CORS, Helmet (seguridad HTTP) y Express Rate Limit (prevención de ataques de fuerza bruta).
+- **Documentación:** API documentada e interactiva utilizando Swagger UI.
 
-Permite a los usuarios autenticados explorar sucursales (restaurantes) y sus menús de platos, crear y gestionar reservaciones (con detección de conflictos de mesa), realizar pedidos en mesa directamente desde la app móvil, y administrar su perfil extendido de usuario (incluyendo sus libretas de direcciones de entrega de comida). Comparte la base de datos MongoDB con `Restaurante-ServerAdmin`.
+## 🛠 Tecnologías Utilizadas
+- **Entorno de Ejecución:** Node.js
+- **Framework Web:** Express.js (v5.1.0)
+- **Base de Datos:** MongoDB (v8.19.2) mediante Mongoose
+- **Seguridad:** JSON Web Tokens (JWT), Bcrypt, Helmet, CORS
+- **Almacenamiento en la Nube:** Cloudinary
+- **Documentación:** Swagger (swagger-jsdoc, swagger-ui-express)
+- **Calidad de Código:** ESLint, Prettier, Husky, Commitizen
 
-## Tech Stack
-
-- **Runtime**: Node.js 20+ (ESM)
-- **Framework**: Express 5.x
-- **Base de Datos**: MongoDB (compartida con server-admin)
-- **ODM**: Mongoose 8.x
-- **Autenticación**: JWT (emitido por auth-node / .NET Auth Service)
-- **Seguridad**: Helmet, CORS, Rate Limiting (por IP y por usuario)
-
-## Instalación
-
-```bash
-cd Restaurante-ServerUser
-pnpm install
-cp .env.example .env
-pnpm dev
-```
-
-## Variables de Entorno
-
-```env
-PORT=3003
-URI_MONGODB=mongodb://localhost:27017/restaurante_db
-SECRETORPRIVATEKEY=Restaurante_Super_Secret_Key_2026_DotNet8
-JWT_ISSUER=AuthService
-JWT_AUDIENCE=AuthService
-CLOUDINARY_CLOUD_NAME=dueikakf8
-CLOUDINARY_API_KEY=119292848621234
-CLOUDINARY_API_SECRET=ckVTJkNQUjUatlwOcYFMg-9hAyM
-ADMIN_SERVICE_URL=http://localhost:3001
-AUTH_NODE_URL=http://localhost:3007/api/v1
-```
-
-## Estructura de Directorios
-
+## 📁 Estructura del Proyecto
 ```
 Restaurante-ServerUser/
-├── configs/
-│   ├── app.js               # Express bootstrap (soporta /restauranteUser/v1 y /api/user)
-│   ├── cors-configuration.js
-│   ├── db.js                # Conexión Mongoose a MongoDB
-│   ├── helmet-configuration.js
-│   └── swagger.js           # Swagger documentation spec
-├── helpers/
-│   └── profile-enrichment.js # Une perfil de MongoDB con claims de Postgres
-├── middlewares/
-│   ├── auth.middleware.js   # Middleware JWT principal
-│   ├── check-validators.js  # Formateador express-validator
-│   ├── file-uploader.js     # Integración Multer + Cloudinary
-│   ├── handle-errors.js     # Capturador global de errores
-│   ├── rate-limit-user.js   # Limitadores por usuario
-│   ├── request-limit.js     # Limitador por IP
-│   └── validate-JWT.js      # Validador de firma inline
-├── src/
-│   ├── auth/                # Conexión inter-servicio con auth-node
-│   ├── branches/            # Sucursales / Restaurantes (Público)
-│   ├── menus/               # Platos y categorías (Público)
-│   ├── orders/              # Pedidos en mesa (Protegido)
-│   ├── reservations/        # Reservaciones y disponibilidad (Protegido)
-│   └── users/               # Perfiles y direcciones (Protegido)
-├── utils/
-│   ├── adminClient.js       # Comunicaciones con ServerAdmin
-│   └── authClient.js        # Comunicaciones con auth-node
-└── index.js
+├── configs/         # Configuraciones de base de datos, cloudinary, etc.
+├── helpers/         # Funciones auxiliares y utilidades reutilizables
+├── middlewares/     # Middlewares de Express (validación de tokens, manejo de errores, etc.)
+├── src/             # Código fuente principal (Controladores, Modelos, Rutas)
+├── utils/           # Herramientas adicionales de soporte
+├── index.js         # Archivo principal de entrada (Entry point)
+├── vercel.json      # Configuración de despliegue en Vercel
+└── package.json     # Dependencias y scripts del proyecto
 ```
 
-## Scripts
+## 📋 Requisitos Previos
+Para poder ejecutar este proyecto de manera local, necesitas instalar:
+- [Node.js](https://nodejs.org/es/) (v18 o superior)
+- [MongoDB](https://www.mongodb.com/) (Local o MongoDB Atlas)
+- Cuenta en [Cloudinary](https://cloudinary.com/) (para gestión de imágenes)
 
+## ⚙️ Instalación y Configuración
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/IN6CM-GestorRestaurante/Restaurante-ServerUser.git
+   cd Restaurante-ServerUser
+   ```
+
+2. **Instalar dependencias:**
+   Puedes utilizar `npm`, `yarn` o `pnpm` (recomendado ya que incluye un pnpm-lock.yaml).
+   ```bash
+   npm install
+   ```
+
+3. **Configurar variables de entorno:**
+   Crea un archivo `.env` en la raíz del proyecto basándote en el archivo de ejemplo (si existe) y configura las siguientes variables:
+   ```env
+   PORT=3000
+   MONGODB_URI=tu_cadena_de_conexion_mongodb
+   JWT_SECRET=tu_secreto_para_jwt
+   CLOUDINARY_CLOUD_NAME=tu_cloud_name
+   CLOUDINARY_API_KEY=tu_api_key
+   CLOUDINARY_API_SECRET=tu_api_secret
+   ```
+
+4. **Ejecutar el servidor en modo desarrollo:**
+   ```bash
+   npm run dev
+   ```
+   El servidor estará disponible en `http://localhost:3000`.
+
+## 📖 Documentación de la API (Swagger)
+Una vez que el servidor esté corriendo, puedes acceder a la interfaz interactiva de Swagger visitando la siguiente ruta en tu navegador:
+```
+http://localhost:3000/api-docs
+```
+
+## 🤝 Contribución
+Este proyecto utiliza `Husky` y `Commitizen` para estandarizar los mensajes de commit. Al realizar cambios, utiliza:
 ```bash
-pnpm dev            # Desarrollo con nodemon
-pnpm start          # Producción
-pnpm lint           # ESLint
-pnpm lint:fix       # ESLint con auto-fix
-pnpm format         # Prettier (escribir)
-pnpm format:check   # Prettier (verificar)
-pnpm commit         # Commit interactivo (Commitizen)
+npm run commit
 ```
-
-## Endpoints
-
-**Base paths soportados:**
-* `/api/user` (Recomendado)
-* `/restauranteUser/v1` (Alineado con Kspots)
-
-**Puerto por defecto:** `3003`
-
-### Sucursales (Público)
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/branches` | Listar restaurantes activos |
-| GET | `/branches/:id` | Detalle de una sucursal |
-
-### Platos y Categorías (Público)
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/menus` | Listar platos con paginación y filtros |
-| GET | `/menus/categories` | Obtener categorías gastronómicas |
-| GET | `/menus/branch/:branchId`| Obtener menú de una sucursal |
-| GET | `/menus/:id` | Detalle de un plato |
-
-### Perfil de Usuario (JWT)
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/users/profile` | Obtener perfil completo enriquecido |
-| PUT | `/users/profile` | Actualizar perfil (displayName, favorito, etc.) |
-| POST | `/users/profile/avatar` | Subir foto de perfil (multipart) |
-| POST | `/users/profile/addresses` | Agregar dirección de entrega |
-| DELETE | `/users/profile/addresses/:id`| Eliminar dirección de entrega |
-| PATCH | `/users/profile/addresses/:id/default`| Establecer dirección predeterminada |
-
-### Reservaciones (JWT)
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/reservations/availability` | Consultar mesas ocupadas por fecha |
-| GET | `/reservations/me/history` | Historial propio de reservaciones |
-| POST | `/reservations` | Crear reservación En Mesa, Domicilio o Para Llevar |
-| PUT | `/reservations/:id/cancel` | Cancelar reservación propia |
-
-### Pedidos (JWT)
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/orders/me/history` | Historial de pedidos |
-| GET | `/orders/:id` | Obtener detalles del pedido |
-| POST | `/orders` | Crear pedido en mesa (precios verificados) |
-| PUT | `/orders/:id/cancel` | Cancelar pedido propio (si está ABIERTA y sin cocinar) |
-
-### Health Check
-
-| Método | Endpoint | Descripción |
-| ------ | -------- | ----------- |
-| GET | `/health` | Comprobar salud del microservicio |
-
-## Documentación Interactiva
-
-Puedes visualizar la interfaz interactiva de Swagger UI accediendo localmente a:
-`http://localhost:3003/api-docs`
-
-## Licencia
-
-MIT
+Esto abrirá un asistente interactivo para formatear tu commit de acuerdo al estándar convencional.
